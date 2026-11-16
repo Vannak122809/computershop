@@ -1,15 +1,31 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { categories, brands } from '@/lib/data';
 import ProductCard from '@/components/ProductCard';
-import { Search, Filter, RotateCcw, ChevronDown, Check, Layers, Tag, X, Flame, DollarSign } from 'lucide-react';
+import { 
+  Search, 
+  Filter, 
+  RotateCcw, 
+  Check, 
+  Layers, 
+  X, 
+  Flame, 
+  Laptop, 
+  Cpu, 
+  Network, 
+  ShieldCheck, 
+  Printer, 
+  Fingerprint, 
+  Gamepad2 
+} from 'lucide-react';
 
 function ProductsCatalogContent() {
   const { lang, t, products } = useStore();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const urlCategory = searchParams.get('category') || '';
   const urlSubcategory = searchParams.get('subcategory') || '';
@@ -29,7 +45,59 @@ function ProductsCatalogContent() {
   const [pricingTypeFilter, setPricingTypeFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<string>(urlSort === 'newest' ? 'newest' : 'featured');
 
+  // Synchronize state whenever URL query params change (Navbar, Home pills, links)
+  useEffect(() => {
+    const c = searchParams.get('category') || '';
+    const sub = searchParams.get('subcategory') || '';
+    const b = searchParams.get('brand') || '';
+    const q = searchParams.get('q') || '';
+    const s = searchParams.get('sort');
+
+    setSelectedCategory(c);
+    setSelectedSubcategory(sub);
+    setSelectedBrand(b);
+    setSearchQuery(q);
+    if (s) {
+      setSortOption(s === 'newest' ? 'newest' : 'featured');
+    }
+  }, [searchParams]);
+
   const activeCategoryObj = categories.find((c) => c.slug === selectedCategory);
+
+  const handleCategorySelect = (catSlug: string) => {
+    setSelectedCategory(catSlug);
+    setSelectedSubcategory('');
+    const params = new URLSearchParams(searchParams.toString());
+    if (catSlug) {
+      params.set('category', catSlug);
+    } else {
+      params.delete('category');
+    }
+    params.delete('subcategory');
+    router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
+  };
+
+  const handleSubcategorySelect = (subSlug: string) => {
+    setSelectedSubcategory(subSlug);
+    const params = new URLSearchParams(searchParams.toString());
+    if (subSlug) {
+      params.set('subcategory', subSlug);
+    } else {
+      params.delete('subcategory');
+    }
+    router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
+  };
+
+  const handleBrandSelect = (brandName: string) => {
+    setSelectedBrand(brandName);
+    const params = new URLSearchParams(searchParams.toString());
+    if (brandName) {
+      params.set('brand', brandName);
+    } else {
+      params.delete('brand');
+    }
+    router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
+  };
 
   const normalizeKhmerSearch = (term: string): string[] => {
     const lower = term.toLowerCase().trim();
@@ -50,6 +118,19 @@ function ProductsCatalogContent() {
       return [lower, ...map[lower]];
     }
     return [lower];
+  };
+
+  const getCategoryIcon = (slug: string) => {
+    switch (slug) {
+      case 'computers': return <Laptop className="w-4 h-4 text-[#0187ca]" />;
+      case 'components': return <Cpu className="w-4 h-4 text-indigo-600" />;
+      case 'networking': return <Network className="w-4 h-4 text-emerald-600" />;
+      case 'security': return <ShieldCheck className="w-4 h-4 text-rose-600" />;
+      case 'printers': return <Printer className="w-4 h-4 text-amber-600" />;
+      case 'attendance': return <Fingerprint className="w-4 h-4 text-purple-600" />;
+      case 'gaming': return <Gamepad2 className="w-4 h-4 text-pink-600" />;
+      default: return <Layers className="w-4 h-4 text-slate-600" />;
+    }
   };
 
   const filteredProducts = useMemo(() => {
@@ -133,20 +214,25 @@ function ProductsCatalogContent() {
     setMinPrice('');
     setMaxPrice('');
     setPricingTypeFilter('all');
+    router.push('/products', { scroll: false });
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6 font-khmer">
+    <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 space-y-6 font-khmer">
       {/* Top Banner / Heading */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-200 gap-3">
         <div>
           <h1 className="text-xl sm:text-3xl font-black text-slate-900">
-            {lang === 'kh' ? 'កាតាឡុកផលិតផលទាំងអស់' : 'Product Catalog'}
+            {selectedCategory && activeCategoryObj 
+              ? (lang === 'kh' ? activeCategoryObj.name_kh : activeCategoryObj.name_en)
+              : (lang === 'kh' ? 'កាតាឡុកផលិតផលទាំងអស់' : 'Product Catalog')}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {lang === 'kh'
-              ? `បង្ហាញចំនួន ${filteredProducts.length} ផលិតផលដែលឆ្លើយតបនឹងការស្វែងរក`
-              : `Showing ${filteredProducts.length} items available`}
+          <p className="text-xs text-slate-500 mt-1">
+            {selectedCategory && activeCategoryObj
+              ? (lang === 'kh' ? activeCategoryObj.description_kh : activeCategoryObj.description_en)
+              : (lang === 'kh' 
+                  ? `ទំនិញសុទ្ធ ១០០% ធានាផ្លូវការ (បង្ហាញ ${filteredProducts.length} / ${products.length} ផលិតផល)` 
+                  : `100% Genuine Authorized Hardware (Showing ${filteredProducts.length} of ${products.length} products)`)}
           </p>
         </div>
 
@@ -163,6 +249,50 @@ function ProductsCatalogContent() {
             <option value="price-high">{lang === 'kh' ? 'តម្លៃ៖ ខ្ពស់ទៅទាប' : 'Price: High to Low'}</option>
           </select>
         </div>
+      </div>
+
+      {/* Horizontal Category Quick-Bar (1-Tap Switching across all devices) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
+        <button
+          onClick={() => handleCategorySelect('')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center space-x-2 flex-shrink-0 btn-tactile ${
+            selectedCategory === ''
+              ? 'bg-[#0187ca] text-white shadow-sm ring-2 ring-[#0187ca]/30'
+              : 'bg-white border border-slate-200/90 text-slate-700 hover:border-[#0187ca] hover:text-[#0187ca] hover:bg-sky-50/50'
+          }`}
+        >
+          <span>{lang === 'kh' ? 'ទាំងអស់ (All)' : 'All Products'}</span>
+          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+            selectedCategory === '' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+          }`}>
+            {products.length}
+          </span>
+        </button>
+
+        {categories.map((c) => {
+          const isSelected = selectedCategory === c.slug;
+          return (
+            <button
+              key={c.id}
+              onClick={() => handleCategorySelect(c.slug)}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center space-x-2 flex-shrink-0 btn-tactile ${
+                isSelected
+                  ? 'bg-[#0187ca] text-white font-bold shadow-sm ring-2 ring-[#0187ca]/30'
+                  : 'bg-white border border-slate-200/90 text-slate-700 hover:border-[#0187ca] hover:text-[#0187ca] hover:bg-sky-50/50'
+              }`}
+            >
+              <span className="w-4 h-4 flex items-center justify-center">
+                {getCategoryIcon(c.slug)}
+              </span>
+              <span>{lang === 'kh' ? c.name_kh : c.name_en}</span>
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
+                isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+              }`}>
+                {c.item_count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -215,10 +345,7 @@ function ProductsCatalogContent() {
             </label>
             <div className="space-y-1 text-xs">
               <button
-                onClick={() => {
-                  setSelectedCategory('');
-                  setSelectedSubcategory('');
-                }}
+                onClick={() => handleCategorySelect('')}
                 className={`btn-tactile w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between ${
                   selectedCategory === '' 
                     ? 'bg-[#0187ca] text-white font-bold shadow-sm shadow-[#0187ca]/30' 
@@ -233,10 +360,7 @@ function ProductsCatalogContent() {
                 return (
                   <div key={c.id} className="space-y-0.5">
                     <button
-                      onClick={() => {
-                        setSelectedCategory(c.slug);
-                        setSelectedSubcategory('');
-                      }}
+                      onClick={() => handleCategorySelect(c.slug)}
                       className={`btn-tactile w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between ${
                         isCatSelected
                           ? 'bg-[#0187ca] text-white font-bold shadow-sm shadow-[#0187ca]/30'
@@ -255,7 +379,7 @@ function ProductsCatalogContent() {
                     {isCatSelected && c.subcategories.length > 0 && (
                       <div className="pl-3 py-1 space-y-1 border-l-2 border-sky-300 ml-3 my-1 animate-slide-down">
                         <button
-                          onClick={() => setSelectedSubcategory('')}
+                          onClick={() => handleSubcategorySelect('')}
                           className={`btn-tactile w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition-all flex items-center justify-between ${
                             selectedSubcategory === ''
                               ? 'text-[#0187ca] font-bold bg-sky-50 shadow-2xs border border-sky-200'
@@ -268,7 +392,7 @@ function ProductsCatalogContent() {
                         {c.subcategories.map((sub) => (
                           <button
                             key={sub.slug}
-                            onClick={() => setSelectedSubcategory(sub.slug)}
+                            onClick={() => handleSubcategorySelect(sub.slug)}
                             className={`btn-tactile w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] transition-all flex items-center justify-between ${
                               selectedSubcategory === sub.slug
                                 ? 'text-[#0187ca] font-bold bg-sky-50 shadow-2xs border border-sky-200'
@@ -294,7 +418,7 @@ function ProductsCatalogContent() {
             </label>
             <select
               value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
+              onChange={(e) => handleBrandSelect(e.target.value)}
               className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#0187ca] focus:ring-2 focus:ring-[#0187ca]/20 transition-all cursor-pointer"
             >
               <option value="">{lang === 'kh' ? 'គ្រប់ម៉ាកទាំងអស់ (All Brands)' : 'All Brands'}</option>
@@ -319,7 +443,7 @@ function ProductsCatalogContent() {
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                 }`}
               >
-                <span>{lang === 'kh' ? 'ទាំងអស់ (All)' : 'All Products'}</span>
+                <span>{lang === 'kh' ? 'ទាំងអស់' : 'All Modes'}</span>
                 {pricingTypeFilter === 'all' && <Check className="w-3.5 h-3.5 text-[#0187ca]" />}
               </button>
 
@@ -328,11 +452,11 @@ function ProductsCatalogContent() {
                 onClick={() => setPricingTypeFilter('buy_now')}
                 className={`btn-tactile w-full text-left px-3 py-2 rounded-xl border transition-all flex items-center justify-between ${
                   pricingTypeFilter === 'buy_now'
-                    ? 'border-[#0187ca] bg-sky-50 text-[#0187ca] font-bold shadow-2xs'
+                    ? 'border-[#0187ca] bg-sky-50/70 text-[#0187ca] font-bold shadow-2xs'
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                 }`}
               >
-                <span>🛒 {lang === 'kh' ? 'ទិញភ្លាម (Buy Now)' : 'Buy Now'}</span>
+                <span>{t.buy_now}</span>
                 {pricingTypeFilter === 'buy_now' && <Check className="w-3.5 h-3.5 text-[#0187ca]" />}
               </button>
 
@@ -341,12 +465,12 @@ function ProductsCatalogContent() {
                 onClick={() => setPricingTypeFilter('request_quote')}
                 className={`btn-tactile w-full text-left px-3 py-2 rounded-xl border transition-all flex items-center justify-between ${
                   pricingTypeFilter === 'request_quote'
-                    ? 'border-amber-500 bg-amber-50 text-amber-800 font-bold shadow-2xs'
+                    ? 'border-amber-500 bg-amber-50/70 text-amber-800 font-bold shadow-2xs'
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                 }`}
               >
-                <span>📞 {lang === 'kh' ? 'សួរតម្លៃ (RFQ)' : 'Request Quote'}</span>
-                {pricingTypeFilter === 'request_quote' && <Check className="w-3.5 h-3.5 text-amber-700" />}
+                <span>{t.request_quote}</span>
+                {pricingTypeFilter === 'request_quote' && <Check className="w-3.5 h-3.5 text-amber-600" />}
               </button>
 
               <button
@@ -354,37 +478,25 @@ function ProductsCatalogContent() {
                 onClick={() => setPricingTypeFilter('request_solution')}
                 className={`btn-tactile w-full text-left px-3 py-2 rounded-xl border transition-all flex items-center justify-between ${
                   pricingTypeFilter === 'request_solution'
-                    ? 'border-emerald-500 bg-emerald-50 text-emerald-800 font-bold shadow-2xs'
+                    ? 'border-emerald-500 bg-emerald-50/70 text-emerald-800 font-bold shadow-2xs'
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                 }`}
               >
-                <span>🛠️ {lang === 'kh' ? 'សេវាកម្ម (Solutions)' : 'Request Solution'}</span>
-                {pricingTypeFilter === 'request_solution' && <Check className="w-3.5 h-3.5 text-emerald-700" />}
+                <span>{t.request_solution}</span>
+                {pricingTypeFilter === 'request_solution' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
               </button>
             </div>
           </div>
 
           {/* Price Range Filter */}
-          <div className="pt-2 border-t border-slate-100 space-y-2">
-            <label className="block text-xs font-bold text-slate-700 flex items-center space-x-1">
-              <DollarSign className="w-3.5 h-3.5 text-[#0187ca]" />
-              <span>{lang === 'kh' ? 'កម្រិតតម្លៃ (USD)' : 'Price Range'}</span>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">
+              {lang === 'kh' ? 'ចន្លោះតម្លៃ (USD)' : 'Price Range (USD)'}
             </label>
-            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+            <div className="grid grid-cols-2 gap-1.5 text-xs mb-2">
               <button
                 type="button"
-                onClick={() => setPricePreset('all')}
-                className={`py-1.5 px-2 rounded-lg border text-center transition btn-tactile ${
-                  pricePreset === 'all'
-                    ? 'bg-sky-50 border-[#0187ca] text-[#0187ca] font-bold'
-                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                {lang === 'kh' ? 'គ្រប់តម្លៃ' : 'All Prices'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setPricePreset('under-100')}
+                onClick={() => setPricePreset(pricePreset === 'under-100' ? 'all' : 'under-100')}
                 className={`py-1.5 px-2 rounded-lg border text-center transition btn-tactile ${
                   pricePreset === 'under-100'
                     ? 'bg-sky-50 border-[#0187ca] text-[#0187ca] font-bold'
@@ -395,7 +507,7 @@ function ProductsCatalogContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setPricePreset('100-500')}
+                onClick={() => setPricePreset(pricePreset === '100-500' ? 'all' : '100-500')}
                 className={`py-1.5 px-2 rounded-lg border text-center transition btn-tactile ${
                   pricePreset === '100-500'
                     ? 'bg-sky-50 border-[#0187ca] text-[#0187ca] font-bold'
@@ -406,7 +518,7 @@ function ProductsCatalogContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setPricePreset('500-1000')}
+                onClick={() => setPricePreset(pricePreset === '500-1000' ? 'all' : '500-1000')}
                 className={`py-1.5 px-2 rounded-lg border text-center transition btn-tactile ${
                   pricePreset === '500-1000'
                     ? 'bg-sky-50 border-[#0187ca] text-[#0187ca] font-bold'
@@ -414,6 +526,17 @@ function ProductsCatalogContent() {
                 }`}
               >
                 $500 - $1K
+              </button>
+              <button
+                type="button"
+                onClick={() => setPricePreset(pricePreset === 'over-1000' ? 'all' : 'over-1000')}
+                className={`py-1.5 px-2 rounded-lg border text-center transition btn-tactile ${
+                  pricePreset === 'over-1000'
+                    ? 'bg-sky-50 border-[#0187ca] text-[#0187ca] font-bold'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                &gt; $1K
               </button>
             </div>
 
@@ -494,7 +617,7 @@ function ProductsCatalogContent() {
               {selectedCategory && (
                 <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-sky-50 text-[#0187ca] font-medium border border-sky-200 text-[11px]">
                   <span>Cat: {categories.find((c) => c.slug === selectedCategory)?.name_en || selectedCategory}</span>
-                  <button onClick={() => { setSelectedCategory(''); setSelectedSubcategory(''); }}>
+                  <button onClick={() => handleCategorySelect('')}>
                     <X className="w-3 h-3 hover:text-slate-900" />
                   </button>
                 </span>
@@ -503,7 +626,7 @@ function ProductsCatalogContent() {
               {selectedSubcategory && (
                 <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-sky-50 text-[#0187ca] font-medium border border-sky-200 text-[11px]">
                   <span>Sub: {selectedSubcategory}</span>
-                  <button onClick={() => setSelectedSubcategory('')}>
+                  <button onClick={() => handleSubcategorySelect('')}>
                     <X className="w-3 h-3 hover:text-slate-900" />
                   </button>
                 </span>
@@ -512,7 +635,7 @@ function ProductsCatalogContent() {
               {selectedBrand && (
                 <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 font-medium border border-purple-200 text-[11px]">
                   <span>Brand: {selectedBrand}</span>
-                  <button onClick={() => setSelectedBrand('')}>
+                  <button onClick={() => handleBrandSelect('')}>
                     <X className="w-3 h-3 hover:text-slate-900" />
                   </button>
                 </span>
@@ -571,7 +694,7 @@ function ProductsCatalogContent() {
                 <span>{lang === 'kh' ? 'ប្រភេទរង' : 'Subcategory'}:</span>
               </div>
               <button
-                onClick={() => setSelectedSubcategory('')}
+                onClick={() => handleSubcategorySelect('')}
                 className={`btn-tactile px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
                   selectedSubcategory === ''
                     ? 'bg-slate-900 text-white shadow-xs'
@@ -583,7 +706,7 @@ function ProductsCatalogContent() {
               {activeCategoryObj.subcategories.map((sub) => (
                 <button
                   key={sub.slug}
-                  onClick={() => setSelectedSubcategory(sub.slug)}
+                  onClick={() => handleSubcategorySelect(sub.slug)}
                   className={`btn-tactile px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
                     selectedSubcategory === sub.slug
                       ? 'bg-[#0187ca] text-white shadow-sm shadow-[#0187ca]/30'
@@ -609,18 +732,15 @@ function ProductsCatalogContent() {
               </p>
               <button
                 onClick={resetFilters}
-                className="btn-tactile px-4 py-2 rounded-xl bg-[#0187ca] hover:bg-[#0073ad] text-white font-bold text-xs shadow-xs transition"
+                className="px-4 py-2 bg-[#0187ca] text-white text-xs font-bold rounded-xl shadow-2xs hover:bg-[#0073ad] transition"
               >
-                {lang === 'kh' ? 'សម្អាតតម្រងទាំងអស់' : 'Clear Filters'}
+                {lang === 'kh' ? 'កំណត់តម្រងឡើងវិញ' : 'Reset All Filters'}
               </button>
             </div>
           ) : (
-            <div
-              key={`${selectedCategory}-${selectedSubcategory}-${selectedBrand}-${pricingTypeFilter}-${sortOption}-${searchQuery}`}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 animate-slide-up"
-            >
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
+              {filteredProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           )}
@@ -632,7 +752,7 @@ function ProductsCatalogContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-16 text-center text-slate-500">Loading Products...</div>}>
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-16 text-center text-slate-500 font-khmer">Loading Products Catalog...</div>}>
       <ProductsCatalogContent />
     </Suspense>
   );

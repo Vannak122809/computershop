@@ -362,13 +362,17 @@ export default function ProductDetailClient() {
                   </button>
 
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      addToCart(product, quantity, currentOptions);
                       openKhqrModal({
+                        order_number: `NVO-${Date.now().toString().slice(-4)}`,
+                        total_usd: effectivePriceUsd * quantity,
                         productName: lang === 'kh' ? product.name_kh : product.name_en,
                         priceUsd: effectivePriceUsd * quantity,
                         priceKhr: effectivePriceKhr * quantity,
-                      })
-                    }
+                        customer_name: 'Customer',
+                      });
+                    }}
                     className="flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-2xl font-bold text-sm bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md shadow-red-500/20 transition-all"
                   >
                     <Zap className="w-4 h-4" />

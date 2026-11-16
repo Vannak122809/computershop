@@ -32,8 +32,9 @@ export default function KhqrModal() {
       setTimeLeft(300);
 
       // Generate a mock Bakong KHQR payload format
-      const amountStr = (orderData.total_usd || 0).toFixed(2);
-      const orderRef = orderData.order_number || `NVO-${Date.now().toString().slice(-4)}`;
+      const finalTotal = Number(orderData.total_usd ?? orderData.priceUsd ?? orderData.total ?? 0);
+      const amountStr = finalTotal.toFixed(2);
+      const orderRef = orderData.order_number || orderData.orderNumber || `NVO-${Date.now().toString().slice(-4)}`;
       const khqrPayload = `00020101021229380016bakong@nbc.org.kh0108NVTECH02100000000000520459995303840540${amountStr.length}${amountStr}5802KH5913NV_TECHNOLOGY6010PHNOM_PENH62${(orderRef.length + 4).toString().padStart(2, '0')}01${orderRef.length.toString().padStart(2, '0')}${orderRef}6304ABCD`;
 
       import('qrcode').then((QRCodeModule) => {
@@ -63,6 +64,9 @@ export default function KhqrModal() {
 
   if (!isOpen || !orderData) return null;
 
+  const displayTotal = Number(orderData.total_usd ?? orderData.priceUsd ?? orderData.total ?? 0);
+  const orderNum = orderData.order_number || orderData.orderNumber || 'NV-ORDER';
+
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const isExpiringSoon = timeLeft < 60;
@@ -86,7 +90,7 @@ export default function KhqrModal() {
     if (!qrDataUrl) return;
     const link = document.createElement('a');
     link.href = qrDataUrl;
-    link.download = `KHQR_${orderData.order_number || 'NV'}.png`;
+    link.download = `KHQR_${orderNum}.png`;
     link.click();
   };
 
@@ -165,9 +169,9 @@ export default function KhqrModal() {
                 <div className="text-left">
                   <h4 className="font-black text-slate-900 text-xs tracking-tight">NV TECHNOLOGY CO., LTD.</h4>
                   <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 font-mono mt-0.5">
-                    <span>#{orderData.order_number}</span>
+                    <span>#{orderNum}</span>
                     <button
-                      onClick={() => copyToClipboard(orderData.order_number, 'order')}
+                      onClick={() => copyToClipboard(orderNum, 'order')}
                       title="Copy Invoice Number"
                       className="text-[#0187ca] hover:text-[#0073ad] transition"
                     >
@@ -188,12 +192,12 @@ export default function KhqrModal() {
                 </span>
                 <div className="flex items-baseline justify-center space-x-1 mt-0.5">
                   <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                    ${(orderData.total_usd || 0).toFixed(2)}
+                    ${displayTotal.toFixed(2)}
                   </span>
                   <span className="text-xs font-bold text-slate-500">USD</span>
                 </div>
                 <button
-                  onClick={() => copyToClipboard((orderData.total_usd || 0).toFixed(2), 'amount')}
+                  onClick={() => copyToClipboard(displayTotal.toFixed(2), 'amount')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0187ca] p-1 rounded transition"
                   title="Copy Amount"
                 >

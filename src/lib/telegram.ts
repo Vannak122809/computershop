@@ -8,7 +8,7 @@ export function createProductTelegramLink(product: Product, lang: 'kh' | 'en' = 
   if (lang === 'kh') {
     message = `សួស្តី NV Technology! 🇰🇭\n` +
       `ខ្ញុំចាប់អារម្មណ៍លើផលិតផលនេះ សូមជួយផ្តល់ព័ត៌មានតម្លៃ និងស្តុក៖\n\n` +
-      `📦 ផលិតផល៖ ${product.name_kh}\n` +
+      `📦 ផលិតផល៖ ${product.name_kh || product.name_en}\n` +
       `🔖 SKU / Model៖ ${product.sku}\n` +
       `🏷️ ម៉ាក៖ ${product.brand}\n` +
       (product.price_usd ? `💰 តម្លៃ៖ $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : `📞 តម្លៃ៖ សូមទាក់ទង\n`) +
@@ -17,7 +17,7 @@ export function createProductTelegramLink(product: Product, lang: 'kh' | 'en' = 
   } else {
     message = `Hello NV Technology! 🇰🇭\n` +
       `I'm interested in this product and would like to confirm price & availability:\n\n` +
-      `📦 Product: ${product.name_en}\n` +
+      `📦 Product: ${product.name_en || product.name_kh}\n` +
       `🔖 SKU: ${product.sku}\n` +
       `🏷️ Brand: ${product.brand}\n` +
       (product.price_usd ? `💰 Price: $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : `📞 Price: Contact for Quote\n`) +
@@ -34,7 +34,7 @@ export function createProductPreorderTelegramLink(product: Product, lang: 'kh' |
   if (lang === 'kh') {
     message = `សួស្តី NV Technology! 🇰🇭\n` +
       `ខ្ញុំចង់កម្ម៉ង់ទុកមុន (Pre-Order) លើទំនិញដែលអស់ពីស្តុក៖\n\n` +
-      `📦 ផលិតផល៖ ${product.name_kh}\n` +
+      `📦 ផលិតផល៖ ${product.name_kh || product.name_en}\n` +
       `🔖 SKU / Model៖ ${product.sku}\n` +
       `🏷️ ម៉ាក៖ ${product.brand}\n` +
       (product.price_usd ? `💰 តម្លៃប៉ាន់ស្មាន៖ $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : '') +
@@ -43,7 +43,7 @@ export function createProductPreorderTelegramLink(product: Product, lang: 'kh' |
   } else {
     message = `Hello NV Technology! 🇰🇭\n` +
       `I would like to place a Pre-Order for this out-of-stock item:\n\n` +
-      `📦 Product: ${product.name_en}\n` +
+      `📦 Product: ${product.name_en || product.name_kh}\n` +
       `🔖 SKU / Model: ${product.sku}\n` +
       `🏷️ Brand: ${product.brand}\n` +
       (product.price_usd ? `💰 Estimated Price: $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : '') +

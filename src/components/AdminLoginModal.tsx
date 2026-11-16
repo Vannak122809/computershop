@@ -13,7 +13,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { ROLE_CONFIG } from '@/lib/auth';
+import { ROLE_CONFIG, authenticateLocalAdmin } from '@/lib/auth';
 import { AdminUser, UserRole } from '@/lib/types';
 
 interface AdminLoginProps {
@@ -33,6 +33,18 @@ export default function AdminLoginModal({ onSuccess, lang = 'kh' }: AdminLoginPr
     setError(null);
     setLoading(true);
 
+    // 1. Check local admin accounts (offline / static hosting compatible)
+    const localUser = authenticateLocalAdmin(username, password);
+    if (localUser) {
+      try {
+        localStorage.setItem('nv_admin_user', JSON.stringify(localUser));
+      } catch (e) {}
+      setLoading(false);
+      onSuccess(localUser);
+      return;
+    }
+
+    // 2. Fallback to API if available
     try {
       const res = await fetch('/api/admin/auth', {
         method: 'POST',
@@ -40,17 +52,20 @@ export default function AdminLoginModal({ onSuccess, lang = 'kh' }: AdminLoginPr
         body: JSON.stringify({ action: 'login', username, password }),
       });
 
-      const data = await res.json();
-      if (data.success && data.user) {
-        onSuccess(data.user);
-      } else {
-        setError(data.error || 'Invalid credentials');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          try {
+            localStorage.setItem('nv_admin_user', JSON.stringify(data.user));
+          } catch (e) {}
+          onSuccess(data.user);
+          return;
+        }
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) {}
+
+    setError(lang === 'kh' ? 'ឈ្មោះ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ' : 'Invalid username or password');
+    setLoading(false);
   };
 
   const handleQuickLogin = async (user: string, pass: string) => {
@@ -58,23 +73,37 @@ export default function AdminLoginModal({ onSuccess, lang = 'kh' }: AdminLoginPr
     setPassword(pass);
     setLoading(true);
     setError(null);
+
+    const localUser = authenticateLocalAdmin(user, pass);
+    if (localUser) {
+      try {
+        localStorage.setItem('nv_admin_user', JSON.stringify(localUser));
+      } catch (e) {}
+      setLoading(false);
+      onSuccess(localUser);
+      return;
+    }
+
     try {
       const res = await fetch('/api/admin/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', username: user, password: pass }),
       });
-      const data = await res.json();
-      if (data.success && data.user) {
-        onSuccess(data.user);
-      } else {
-        setError(data.error);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          try {
+            localStorage.setItem('nv_admin_user', JSON.stringify(data.user));
+          } catch (e) {}
+          onSuccess(data.user);
+          return;
+        }
       }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) {}
+
+    setError(lang === 'kh' ? 'ឈ្មោះ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ' : 'Invalid username or password');
+    setLoading(false);
   };
 
   return (

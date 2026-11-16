@@ -99,11 +99,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       console.error('Storage load error:', e);
     }
 
-    // Always fetch latest products from server backend API
+    // Fetch latest products from server backend API if available
     fetch('/api/products')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
       .then((data) => {
-        if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+        if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
           setProductsList(data.data);
           try {
             localStorage.setItem('nv_admin_products', JSON.stringify(data.data));
@@ -111,7 +114,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch((err) => {
-        console.warn('Could not sync with /api/products:', err);
+        // Fallback silently to localStorage in static/offline environment
       });
 
     // Cross-tab and window synchronization
@@ -154,19 +157,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const addProduct = (product: Product) => {
     const updated = [product, ...productsList.filter((p) => p.id !== product.id)];
     saveProducts(updated);
-    // Send to backend API
+    // Send to backend API if running with active server
     fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
       .then((data) => {
-        if (data.status === 'success' && data.data) {
+        if (data && data.status === 'success' && data.data) {
           setProductsList((prev) => [data.data, ...prev.filter((p) => p.id !== data.data.id && p.id !== product.id)]);
         }
       })
-      .catch((err) => console.error('Failed to persist product to API:', err));
+      .catch(() => {});
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
@@ -174,30 +180,33 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       p.id === id ? { ...p, ...updates } : p
     );
     saveProducts(updated);
-    // Send to backend API
+    // Send to backend API if running with active server
     fetch('/api/products', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, ...updates }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
       .then((data) => {
-        if (data.status === 'success' && data.data) {
+        if (data && data.status === 'success' && data.data) {
           setProductsList((prev) =>
             prev.map((item) => (item.id === id ? data.data : item))
           );
         }
       })
-      .catch((err) => console.error('Failed to update product via API:', err));
+      .catch(() => {});
   };
 
   const deleteProduct = (id: string) => {
     const updated = productsList.filter((p) => p.id !== id);
     saveProducts(updated);
-    // Send to backend API
+    // Send to backend API if running with active server
     fetch(`/api/products?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
-    }).catch((err) => console.error('Failed to delete product via API:', err));
+    }).catch(() => {});
   };
 
   const updateProductStock = (id: string, deltaOrExact: number, isExact = false) => {

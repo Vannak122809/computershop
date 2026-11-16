@@ -135,3 +135,28 @@ export function hasPermission(role: UserRole, permission: keyof RolePermissions)
   if (!config) return false;
   return !!config[permission];
 }
+
+export function authenticateLocalAdmin(username: string, password: string): AdminUser | null {
+  let userList = INITIAL_ADMIN_USERS;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('nv_admin_users_list');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          userList = parsed;
+        }
+      }
+    } catch (e) {}
+  }
+
+  const cleanUser = username.trim().toLowerCase();
+  const found = userList.find(
+    (u) => u.username.toLowerCase() === cleanUser && u.password === password
+  );
+
+  if (!found || found.status === 'suspended') return null;
+  const { password: _, ...safeUser } = found;
+  return safeUser as AdminUser;
+}
+

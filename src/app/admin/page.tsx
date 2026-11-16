@@ -462,7 +462,7 @@ export default function AdminPage() {
     }
   };
 
-  // Image Upload handler
+  // Image Upload handler (with instant FileReader fallback for static hosting)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isSubView = false, subViewIndex?: number) => {
     if (!currentUser || !hasPermission(currentUser.role, 'canUploadImages')) {
       alert('Your user level does not have permission to upload files.');
@@ -473,6 +473,43 @@ export default function AdminPage() {
     if (!file) return;
 
     setUploadingImage(true);
+
+    const applyImage = (url: string) => {
+      if (isSubView && typeof subViewIndex === 'number') {
+        setFormData((prev) => {
+          const nextSubViews = [...(prev.sub_views || [])];
+          if (nextSubViews[subViewIndex]) {
+            nextSubViews[subViewIndex] = { ...nextSubViews[subViewIndex], url };
+          }
+          return { ...prev, sub_views: nextSubViews };
+        });
+        showToast('Uploaded sub-view angle image successfully!');
+      } else {
+        setFormData((prev) => ({ ...prev, image: url }));
+        showToast('Uploaded primary image successfully!');
+      }
+      setUploadingImage(false);
+      if (e.target) e.target.value = '';
+    };
+
+    // Client-side fallback using Data URL
+    const fallbackFileReader = () => {
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        const resultUrl = loadEvent.target?.result as string;
+        if (resultUrl) {
+          applyImage(resultUrl);
+        } else {
+          setUploadingImage(false);
+        }
+      };
+      reader.onerror = () => {
+        alert('Failed to read image file');
+        setUploadingImage(false);
+      };
+      reader.readAsDataURL(file);
+    };
+
     try {
       const uploadData = new FormData();
       uploadData.append('file', file);
@@ -482,29 +519,19 @@ export default function AdminPage() {
         body: uploadData,
       });
 
+      if (!res.ok) {
+        fallbackFileReader();
+        return;
+      }
+
       const data = await res.json();
       if (data.success && data.url) {
-        if (isSubView && typeof subViewIndex === 'number') {
-          setFormData((prev) => {
-            const nextSubViews = [...(prev.sub_views || [])];
-            if (nextSubViews[subViewIndex]) {
-              nextSubViews[subViewIndex] = { ...nextSubViews[subViewIndex], url: data.url };
-            }
-            return { ...prev, sub_views: nextSubViews };
-          });
-          showToast(`Uploaded sub-view angle image successfully!`);
-        } else {
-          setFormData((prev) => ({ ...prev, image: data.url }));
-          showToast(`Uploaded primary image successfully!`);
-        }
+        applyImage(data.url);
       } else {
-        alert(data.error || 'Upload failed');
+        fallbackFileReader();
       }
     } catch (err: any) {
-      alert(`Upload error: ${err.message}`);
-    } finally {
-      setUploadingImage(false);
-      if (e.target) e.target.value = '';
+      fallbackFileReader();
     }
   };
 

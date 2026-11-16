@@ -1,8 +1,10 @@
 name = "computershop"
+main = "src/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "out"
-main = "src/worker.js"
+
+[build]
+command = "echo 'Static assets ready in out/'"
 
 [assets]
 directory = "./out"

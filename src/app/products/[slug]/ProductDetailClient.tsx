@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
-import { createProductTelegramLink } from '@/lib/telegram';
+import { createProductTelegramLink, createProductPreorderTelegramLink } from '@/lib/telegram';
 import { getProductOptions } from '@/lib/productOptions';
 import { SelectedProductOptions } from '@/lib/types';
 import ProductCard from '@/components/ProductCard';
@@ -83,7 +83,11 @@ export default function ProductDetailClient() {
     .filter((p) => p.category_slug === product.category_slug && p.id !== product.id)
     .slice(0, 4);
 
-  const telegramLink = createProductTelegramLink(product);
+  const isOutOfStock = !product.in_stock || product.stock_count === 0;
+  const isLowStock = !isOutOfStock && product.stock_count <= 5;
+  const telegramLink = isOutOfStock
+    ? createProductPreorderTelegramLink(product, lang)
+    : createProductTelegramLink(product, lang);
 
   const handleAddToCart = () => {
     addToCart(product, quantity, currentOptions);
@@ -149,10 +153,22 @@ export default function ProductDetailClient() {
 
             {/* Details Column */}
             <div className="lg:col-span-6 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  {product.brand}
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                    {product.brand}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    SKU: {product.sku}
+                  </span>
+                  {product.warranty_months > 0 && (
+                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center">
+                      <Shield className="w-3 h-3 mr-1 text-emerald-600" />
+                      {product.warranty_months} {lang === 'kh' ? 'ខែធានាផ្លូវការ' : 'Months Warranty'}
+                    </span>
+                  )}
+                </div>
+
                 <button
                   onClick={handleShare}
                   className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-3 py-1.5 rounded-full transition-colors"
@@ -160,6 +176,26 @@ export default function ProductDetailClient() {
                   <Share2 className="w-3.5 h-3.5 mr-1.5" />
                   {copiedLink ? (lang === 'kh' ? 'បានចម្លង!' : 'Copied!') : (lang === 'kh' ? 'ចែករំលែក' : 'Share')}
                 </button>
+              </div>
+
+              {/* Stock Status Badge */}
+              <div className="mb-3">
+                {product.stock_count > 5 ? (
+                  <span className="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 font-khmer">
+                    <Check className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                    {lang === 'kh' ? 'មានក្នុងស្តុក (រួចរាល់សម្រាប់ការដឹកជញ្ជូនរហ័ស 1-2 ម៉ោង)' : 'In Stock (Ready for 1-2h Phnom Penh Dispatch)'}
+                  </span>
+                ) : product.stock_count > 0 ? (
+                  <span className="inline-flex items-center text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-xl border border-amber-200/80 dark:border-amber-800/60 font-khmer">
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
+                    {lang === 'kh' ? `នៅសល់តែ ${product.stock_count} គ្រឿងក្នុងស្តុកប៉ុណ្ណោះ! រួសរាន់កម្ម៉ង់` : `Only ${product.stock_count} left in stock! Order soon`}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center text-xs font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 px-3 py-1 rounded-xl border border-rose-200/80 dark:border-rose-800/60 font-khmer">
+                    <Zap className="w-3.5 h-3.5 mr-1.5 text-rose-500" />
+                    {lang === 'kh' ? 'អស់ពីស្តុកបណ្តោះអាសន្ន (អាចកម្ម៉ង់ទុកមុនបាន)' : 'Temporarily Out of Stock (Available for Pre-Order)'}
+                  </span>
+                )}
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
@@ -348,57 +384,95 @@ export default function ProductDetailClient() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <button
-                    onClick={handleAddToCart}
-                    className={`flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-2xl font-bold text-sm shadow-md transition-all ${
-                      justAdded
-                        ? 'bg-emerald-600 text-white ring-2 ring-emerald-500'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20 hover:shadow-blue-500/30'
-                    }`}
-                  >
-                    {justAdded ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-                    <span>{justAdded ? (lang === 'kh' ? 'បានបន្ថែម!' : 'Added!') : (lang === 'kh' ? 'បញ្ចូលក្នុងកន្ត្រក' : 'Add to Cart')}</span>
-                  </button>
+                {isOutOfStock ? (
+                  <div className="space-y-3 pt-2">
+                    <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs leading-relaxed font-khmer">
+                      <div className="font-bold flex items-center space-x-1.5 mb-1">
+                        <Sparkles className="w-4 h-4 text-amber-600" />
+                        <span>{lang === 'kh' ? 'ទំនិញនេះកំពុងអស់ពីស្តុកបណ្តោះអាសន្ន' : 'Temporarily Out of Stock'}</span>
+                      </div>
+                      <p>
+                        {lang === 'kh' 
+                          ? 'លោកអ្នកអាចធ្វើការកម្ម៉ង់ទុកមុន (Pre-Order) តាមរយៈ Telegram ដើម្បីទទួលបានអាទិភាពទទួលឥវ៉ាន់មុនគេ និងការធានាតម្លៃពិសេសពេលទំនិញមកដល់ស្តុកថ្មី។'
+                          : 'You can pre-order this item directly via Telegram to lock in priority allocation and guarantee your unit upon new stock arrival.'}
+                      </p>
+                    </div>
 
-                  <button
-                    onClick={() => {
-                      addToCart(product, quantity, currentOptions);
-                      openKhqrModal({
-                        order_number: `NVO-${Date.now().toString().slice(-4)}`,
-                        total_usd: effectivePriceUsd * quantity,
-                        productName: lang === 'kh' ? product.name_kh : product.name_en,
-                        priceUsd: effectivePriceUsd * quantity,
-                        priceKhr: effectivePriceKhr * quantity,
-                        customer_name: 'Customer',
-                      });
-                    }}
-                    className="flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-2xl font-bold text-sm bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md shadow-red-500/20 transition-all"
-                  >
-                    <Zap className="w-4 h-4" />
-                    <span>{lang === 'kh' ? 'ទិញភ្លាមៗ (KHQR)' : 'Buy Now with KHQR'}</span>
-                  </button>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <a
+                        href={telegramLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-2xl font-bold text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md shadow-orange-500/20 transition-all btn-tactile"
+                      >
+                        <Send className="w-4 h-4" />
+                        <span>{lang === 'kh' ? 'កម្ម៉ង់ទុកមុនតាម Telegram' : 'Pre-Order via Telegram'}</span>
+                      </a>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <a
-                    href={telegramLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-xl font-semibold text-xs bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 transition-colors"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>{lang === 'kh' ? 'សាកសួរតាម Telegram' : 'Ask on Telegram'}</span>
-                  </a>
+                      <button
+                        onClick={() => openQuoteModal(product)}
+                        className="flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-2xl font-bold text-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors btn-tactile"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>{lang === 'kh' ? 'ស្នើសុំសម្រង់តម្លៃ (RFQ)' : 'Request Official Quote'}</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      <button
+                        onClick={handleAddToCart}
+                        className={`flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-2xl font-bold text-sm shadow-md transition-all btn-tactile ${
+                          justAdded
+                            ? 'bg-emerald-600 text-white ring-2 ring-emerald-500'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20 hover:shadow-blue-500/30'
+                        }`}
+                      >
+                        {justAdded ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
+                        <span>{justAdded ? (lang === 'kh' ? 'បានបន្ថែម!' : 'Added!') : (lang === 'kh' ? 'បញ្ចូលក្នុងកន្ត្រក' : 'Add to Cart')}</span>
+                      </button>
 
-                  <button
-                    onClick={() => openQuoteModal(product)}
-                    className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-xl font-semibold text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>{lang === 'kh' ? 'ស្នើសុំសម្រង់តម្លៃផ្លូវការ' : 'Request Official Quote'}</span>
-                  </button>
-                </div>
+                      <button
+                        onClick={() => {
+                          addToCart(product, quantity, currentOptions);
+                          openKhqrModal({
+                            order_number: `NVO-${Date.now().toString().slice(-4)}`,
+                            total_usd: effectivePriceUsd * quantity,
+                            productName: lang === 'kh' ? product.name_kh : product.name_en,
+                            priceUsd: effectivePriceUsd * quantity,
+                            priceKhr: effectivePriceKhr * quantity,
+                            customer_name: 'Customer',
+                          });
+                        }}
+                        className="flex items-center justify-center space-x-2 w-full py-3.5 px-6 rounded-2xl font-bold text-sm bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md shadow-red-500/20 transition-all btn-tactile"
+                      >
+                        <Zap className="w-4 h-4" />
+                        <span>{lang === 'kh' ? 'ទិញភ្លាមៗ (KHQR)' : 'Buy Now with KHQR'}</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <a
+                        href={telegramLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-xl font-semibold text-xs bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 transition-colors btn-tactile"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>{lang === 'kh' ? 'សាកសួរតាម Telegram' : 'Ask on Telegram'}</span>
+                      </a>
+
+                      <button
+                        onClick={() => openQuoteModal(product)}
+                        className="flex items-center justify-center space-x-2 w-full py-3 px-4 rounded-xl font-semibold text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors btn-tactile"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>{lang === 'kh' ? 'ស្នើសុំសម្រង់តម្លៃផ្លូវការ' : 'Request Official Quote'}</span>
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Guarantees Box */}

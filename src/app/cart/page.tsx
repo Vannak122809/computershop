@@ -20,18 +20,30 @@ import {
 
 const CAMBODIA_PROVINCES = [
   'រាជធានីភ្នំពេញ (Phnom Penh)',
+  'ខេត្តកណ្តាល (Kandal)',
   'ខេត្តសៀមរាប (Siem Reap)',
   'ខេត្តបាត់ដំបង (Battambang)',
   'ខេត្តព្រះសីហនុ (Preah Sihanouk)',
   'ខេត្តកំពង់ចាម (Kampong Cham)',
-  'ខេត្តកណ្តាល (Kandal)',
   'ខេត្តកំពត (Kampot)',
   'ខេត្តតាកែវ (Takeo)',
   'ខេត្តបន្ទាយមានជ័យ (Banteay Meanchey)',
   'ខេត្តកំពង់ធំ (Kampong Thom)',
   'ខេត្តស្វាយរៀង (Svay Rieng)',
   'ខេត្តព្រៃវែង (Prey Veng)',
-  'ខេត្តផ្សេងៗ (Other Provinces)',
+  'ខេត្តពោធិ៍សាត់ (Pursat)',
+  'ខេត្តកំពង់ឆ្នាំង (Kampong Chhnang)',
+  'ខេត្តកំពង់ស្ពឺ (Kampong Speu)',
+  'ខេត្តកោះកុង (Koh Kong)',
+  'ខេត្តកែប (Kep)',
+  'ខេត្តប៉ៃលិន (Pailin)',
+  'ខេត្តព្រះវិហារ (Preah Vihear)',
+  'ខេត្តស្ទឹងត្រែង (Stung Treng)',
+  'ខេត្តរតនគិរី (Ratanakiri)',
+  'ខេត្តមណ្ឌលគិរី (Mondulkiri)',
+  'ខេត្តក្រចេះ (Kratie)',
+  'ខេត្តឧត្តរមានជ័យ (Oddar Meanchey)',
+  'ខេត្តត្បូងឃ្មុំ (Tboung Khmum)',
 ];
 
 export default function CartPage() {

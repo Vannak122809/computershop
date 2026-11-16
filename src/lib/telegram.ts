@@ -3,14 +3,16 @@ import { Product, CustomPCSelection } from './types';
 const TELEGRAM_HANDLE = 'shinggg168'; // NV Technology direct telegram contact
 
 export function createProductTelegramLink(product: Product, lang: 'kh' | 'en' = 'kh'): string {
+  const khr = (product.price_usd || 0) * 4100;
   let message = '';
   if (lang === 'kh') {
     message = `សួស្តី NV Technology! 🇰🇭\n` +
       `ខ្ញុំចាប់អារម្មណ៍លើផលិតផលនេះ សូមជួយផ្តល់ព័ត៌មានតម្លៃ និងស្តុក៖\n\n` +
       `📦 ផលិតផល៖ ${product.name_kh}\n` +
-      `🔖 SKU៖ ${product.sku}\n` +
+      `🔖 SKU / Model៖ ${product.sku}\n` +
       `🏷️ ម៉ាក៖ ${product.brand}\n` +
-      (product.price_usd ? `💰 តម្លៃ៖ $${product.sale_price_usd ?? product.price_usd}\n` : `📞 តម្លៃ៖ សូមទាក់ទង\n`) +
+      (product.price_usd ? `💰 តម្លៃ៖ $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : `📞 តម្លៃ៖ សូមទាក់ទង\n`) +
+      (product.warranty_months ? `🛡️ ការធានា៖ ${product.warranty_months} ខែផ្លូវការ\n` : '') +
       `\nសូមអរគុណ!`;
   } else {
     message = `Hello NV Technology! 🇰🇭\n` +
@@ -18,8 +20,35 @@ export function createProductTelegramLink(product: Product, lang: 'kh' | 'en' = 
       `📦 Product: ${product.name_en}\n` +
       `🔖 SKU: ${product.sku}\n` +
       `🏷️ Brand: ${product.brand}\n` +
-      (product.price_usd ? `💰 Price: $${product.sale_price_usd ?? product.price_usd}\n` : `📞 Price: Contact for Quote\n`) +
+      (product.price_usd ? `💰 Price: $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : `📞 Price: Contact for Quote\n`) +
+      (product.warranty_months ? `🛡️ Warranty: ${product.warranty_months} Months Official\n` : '') +
       `\nThank you!`;
+  }
+
+  return `https://t.me/${TELEGRAM_HANDLE}?text=${encodeURIComponent(message)}`;
+}
+
+export function createProductPreorderTelegramLink(product: Product, lang: 'kh' | 'en' = 'kh'): string {
+  const khr = (product.price_usd || 0) * 4100;
+  let message = '';
+  if (lang === 'kh') {
+    message = `សួស្តី NV Technology! 🇰🇭\n` +
+      `ខ្ញុំចង់កម្ម៉ង់ទុកមុន (Pre-Order) លើទំនិញដែលអស់ពីស្តុក៖\n\n` +
+      `📦 ផលិតផល៖ ${product.name_kh}\n` +
+      `🔖 SKU / Model៖ ${product.sku}\n` +
+      `🏷️ ម៉ាក៖ ${product.brand}\n` +
+      (product.price_usd ? `💰 តម្លៃប៉ាន់ស្មាន៖ $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : '') +
+      (product.warranty_months ? `🛡️ ការធានា៖ ${product.warranty_months} ខែ\n` : '') +
+      `\nតើទំនិញនេះអាចមកដល់វិញនៅពេលណាដែរ? សូមជួយពិនិត្យ និងបញ្ជាក់ឱ្យខ្ញុំផង។ អរគុណ!`;
+  } else {
+    message = `Hello NV Technology! 🇰🇭\n` +
+      `I would like to place a Pre-Order for this out-of-stock item:\n\n` +
+      `📦 Product: ${product.name_en}\n` +
+      `🔖 SKU / Model: ${product.sku}\n` +
+      `🏷️ Brand: ${product.brand}\n` +
+      (product.price_usd ? `💰 Estimated Price: $${product.sale_price_usd ?? product.price_usd} (≈ ៛${khr.toLocaleString()})\n` : '') +
+      (product.warranty_months ? `🛡️ Warranty: ${product.warranty_months} Months\n` : '') +
+      `\nWhen will this item be restocked? Please let me know. Thank you!`;
   }
 
   return `https://t.me/${TELEGRAM_HANDLE}?text=${encodeURIComponent(message)}`;

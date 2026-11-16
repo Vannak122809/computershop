@@ -1,4 +1,5 @@
 const ADMIN_USERS = [
+  // Level 1: Super Admin
   {
     id: 'usr-admin-01',
     username: 'admin',
@@ -10,6 +11,28 @@ const ADMIN_USERS = [
     status: 'active',
   },
   {
+    id: 'usr-test-lvl1',
+    username: 'test_admin',
+    password: 'test123',
+    name: 'Test Super Admin (Level 1)',
+    email: 'test_admin@nvtechnology.com.kh',
+    role: 'super_admin',
+    avatar: 'TA',
+    status: 'active',
+  },
+  {
+    id: 'usr-test-1',
+    username: 'test1',
+    password: 'test123',
+    name: 'Test Admin L1 (Quick Test)',
+    email: 'test1@nvtechnology.com.kh',
+    role: 'super_admin',
+    avatar: 'T1',
+    status: 'active',
+  },
+
+  // Level 2: Inventory Manager
+  {
     id: 'usr-inv-02',
     username: 'inventory',
     password: 'manager123',
@@ -19,6 +42,28 @@ const ADMIN_USERS = [
     avatar: 'SH',
     status: 'active',
   },
+  {
+    id: 'usr-test-lvl2',
+    username: 'test_inventory',
+    password: 'test123',
+    name: 'Test Stock Manager (Level 2)',
+    email: 'test_inventory@nvtechnology.com.kh',
+    role: 'inventory_manager',
+    avatar: 'TI',
+    status: 'active',
+  },
+  {
+    id: 'usr-test-2',
+    username: 'test2',
+    password: 'test123',
+    name: 'Test Inventory L2 (Quick Test)',
+    email: 'test2@nvtechnology.com.kh',
+    role: 'inventory_manager',
+    avatar: 'T2',
+    status: 'active',
+  },
+
+  // Level 3: Sales Staff
   {
     id: 'usr-sales-03',
     username: 'sales',
@@ -30,6 +75,28 @@ const ADMIN_USERS = [
     status: 'active',
   },
   {
+    id: 'usr-test-lvl3',
+    username: 'test_sales',
+    password: 'test123',
+    name: 'Test Sales Staff (Level 3)',
+    email: 'test_sales@nvtechnology.com.kh',
+    role: 'sales_staff',
+    avatar: 'TS',
+    status: 'active',
+  },
+  {
+    id: 'usr-test-3',
+    username: 'test3',
+    password: 'test123',
+    name: 'Test Sales L3 (Quick Test)',
+    email: 'test3@nvtechnology.com.kh',
+    role: 'sales_staff',
+    avatar: 'T3',
+    status: 'active',
+  },
+
+  // Level 4: Auditor
+  {
     id: 'usr-audit-04',
     username: 'auditor',
     password: 'audit123',
@@ -37,6 +104,26 @@ const ADMIN_USERS = [
     email: 'audit@nvtechnology.com.kh',
     role: 'viewer',
     avatar: 'BM',
+    status: 'active',
+  },
+  {
+    id: 'usr-test-lvl4',
+    username: 'test_viewer',
+    password: 'test123',
+    name: 'Test Auditor Viewer (Level 4)',
+    email: 'test_viewer@nvtechnology.com.kh',
+    role: 'viewer',
+    avatar: 'TV',
+    status: 'active',
+  },
+  {
+    id: 'usr-test-4',
+    username: 'test4',
+    password: 'test123',
+    name: 'Test Viewer L4 (Quick Test)',
+    email: 'test4@nvtechnology.com.kh',
+    role: 'viewer',
+    avatar: 'T4',
     status: 'active',
   },
 ];

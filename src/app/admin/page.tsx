@@ -150,7 +150,14 @@ export default function AdminPage() {
       }
       const savedAdminUsers = localStorage.getItem('nv_admin_users_list');
       if (savedAdminUsers) {
-        setAdminUsers(JSON.parse(savedAdminUsers));
+        const parsed = JSON.parse(savedAdminUsers);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingUsernames = new Set(parsed.map((u: any) => u.username?.toLowerCase()));
+          const missingInitials = INITIAL_ADMIN_USERS.filter(
+            (u) => !existingUsernames.has(u.username.toLowerCase())
+          );
+          setAdminUsers([...parsed, ...missingInitials]);
+        }
       }
 
       const loadLiveStorefrontData = () => {

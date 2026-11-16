@@ -80,6 +80,7 @@ export const ROLE_CONFIG: Record<UserRole, RolePermissions> = {
 };
 
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
+  // Level 1: Super Admin / Owner
   {
     id: 'usr-admin-01',
     username: 'admin',
@@ -93,6 +94,32 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     created_at: '2026-01-10',
   },
   {
+    id: 'usr-test-lvl1',
+    username: 'test_admin',
+    password: 'test123',
+    name: 'Test Super Admin (Level 1)',
+    email: 'test_admin@nvtechnology.com.kh',
+    role: 'super_admin',
+    avatar: 'TA',
+    last_login: 'Just now',
+    status: 'active',
+    created_at: '2026-01-10',
+  },
+  {
+    id: 'usr-test-1',
+    username: 'test1',
+    password: 'test123',
+    name: 'Test Admin L1 (Quick Test)',
+    email: 'test1@nvtechnology.com.kh',
+    role: 'super_admin',
+    avatar: 'T1',
+    last_login: 'Just now',
+    status: 'active',
+    created_at: '2026-01-10',
+  },
+
+  // Level 2: Inventory / Stock Manager
+  {
     id: 'usr-inv-02',
     username: 'inventory',
     password: 'manager123',
@@ -104,6 +131,32 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     status: 'active',
     created_at: '2026-02-15',
   },
+  {
+    id: 'usr-test-lvl2',
+    username: 'test_inventory',
+    password: 'test123',
+    name: 'Test Stock Manager (Level 2)',
+    email: 'test_inventory@nvtechnology.com.kh',
+    role: 'inventory_manager',
+    avatar: 'TI',
+    last_login: '1 hour ago',
+    status: 'active',
+    created_at: '2026-02-15',
+  },
+  {
+    id: 'usr-test-2',
+    username: 'test2',
+    password: 'test123',
+    name: 'Test Inventory L2 (Quick Test)',
+    email: 'test2@nvtechnology.com.kh',
+    role: 'inventory_manager',
+    avatar: 'T2',
+    last_login: '1 hour ago',
+    status: 'active',
+    created_at: '2026-02-15',
+  },
+
+  // Level 3: Sales & Support Staff
   {
     id: 'usr-sales-03',
     username: 'sales',
@@ -117,6 +170,32 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     created_at: '2026-03-01',
   },
   {
+    id: 'usr-test-lvl3',
+    username: 'test_sales',
+    password: 'test123',
+    name: 'Test Sales Staff (Level 3)',
+    email: 'test_sales@nvtechnology.com.kh',
+    role: 'sales_staff',
+    avatar: 'TS',
+    last_login: 'Yesterday',
+    status: 'active',
+    created_at: '2026-03-01',
+  },
+  {
+    id: 'usr-test-3',
+    username: 'test3',
+    password: 'test123',
+    name: 'Test Sales L3 (Quick Test)',
+    email: 'test3@nvtechnology.com.kh',
+    role: 'sales_staff',
+    avatar: 'T3',
+    last_login: 'Yesterday',
+    status: 'active',
+    created_at: '2026-03-01',
+  },
+
+  // Level 4: Auditor / Viewer
+  {
     id: 'usr-audit-04',
     username: 'auditor',
     password: 'audit123',
@@ -124,6 +203,30 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     email: 'audit@nvtechnology.com.kh',
     role: 'viewer',
     avatar: 'BM',
+    last_login: '3 days ago',
+    status: 'active',
+    created_at: '2026-03-20',
+  },
+  {
+    id: 'usr-test-lvl4',
+    username: 'test_viewer',
+    password: 'test123',
+    name: 'Test Auditor Viewer (Level 4)',
+    email: 'test_viewer@nvtechnology.com.kh',
+    role: 'viewer',
+    avatar: 'TV',
+    last_login: '3 days ago',
+    status: 'active',
+    created_at: '2026-03-20',
+  },
+  {
+    id: 'usr-test-4',
+    username: 'test4',
+    password: 'test123',
+    name: 'Test Viewer L4 (Quick Test)',
+    email: 'test4@nvtechnology.com.kh',
+    role: 'viewer',
+    avatar: 'T4',
     last_login: '3 days ago',
     status: 'active',
     created_at: '2026-03-20',
@@ -137,22 +240,28 @@ export function hasPermission(role: UserRole, permission: keyof RolePermissions)
 }
 
 export function authenticateLocalAdmin(username: string, password: string): AdminUser | null {
-  let userList = INITIAL_ADMIN_USERS;
+  let userList = [...INITIAL_ADMIN_USERS];
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem('nv_admin_users_list');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          userList = parsed;
+          const existingUsernames = new Set(parsed.map((u: any) => u.username?.toLowerCase()));
+          const missingInitials = INITIAL_ADMIN_USERS.filter(
+            (u) => !existingUsernames.has(u.username.toLowerCase())
+          );
+          userList = [...parsed, ...missingInitials];
         }
       }
     } catch (e) {}
   }
 
   const cleanUser = username.trim().toLowerCase();
+  const cleanPass = password.trim();
+
   const found = userList.find(
-    (u) => u.username.toLowerCase() === cleanUser && u.password === password
+    (u) => u.username.toLowerCase() === cleanUser && u.password === cleanPass
   );
 
   if (!found || found.status === 'suspended') return null;

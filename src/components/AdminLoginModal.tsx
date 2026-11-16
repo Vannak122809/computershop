@@ -190,61 +190,70 @@ export default function AdminLoginModal({ onSuccess, lang = 'kh' }: AdminLoginPr
 
           {/* User Levels Fast Switch / Demo Access */}
           <div className="pt-4 border-t border-slate-100 space-y-2.5">
-            <span className="text-[11px] font-bold text-slate-500 block">
-              {lang === 'kh' ? 'សាកល្បងចូលតាមកម្រិតសិទ្ធិ (Test User Levels):' : 'Fast Demo Login by User Level:'}
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-500 block">
+                {lang === 'kh' ? 'សាកល្បងចូលតាមកម្រិតសិទ្ធិ (Test User Levels):' : 'Fast Test Login by User Level:'}
+              </span>
+              <span className="text-[9px] font-mono bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full border border-sky-200 font-bold">
+                Pass: test123
+              </span>
+            </div>
 
             <div className="grid grid-cols-2 gap-2 text-[10px]">
               {/* Level 1: Super Admin */}
               <button
                 type="button"
-                onClick={() => handleQuickLogin('admin', 'admin123')}
-                className="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-left transition btn-tactile"
+                onClick={() => handleQuickLogin('test1', 'test123')}
+                className="p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-left transition btn-tactile group"
               >
                 <div className="font-bold text-purple-900 flex items-center justify-between">
                   <span>👑 Level 1</span>
-                  <span className="text-[8px] bg-purple-200 px-1 rounded font-mono">admin</span>
+                  <span className="text-[8px] bg-purple-200 px-1 rounded font-mono group-hover:bg-purple-300">test1</span>
                 </div>
-                <span className="text-purple-700 block truncate font-medium">Super Admin</span>
+                <span className="text-purple-700 block truncate font-medium mt-0.5">Super Admin</span>
+                <span className="text-[9px] text-purple-500 font-mono">admin / admin123</span>
               </button>
 
               {/* Level 2: Stock Manager */}
               <button
                 type="button"
-                onClick={() => handleQuickLogin('inventory', 'manager123')}
-                className="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-left transition btn-tactile"
+                onClick={() => handleQuickLogin('test2', 'test123')}
+                className="p-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-left transition btn-tactile group"
               >
                 <div className="font-bold text-sky-900 flex items-center justify-between">
                   <span>📦 Level 2</span>
-                  <span className="text-[8px] bg-sky-200 px-1 rounded font-mono">inventory</span>
+                  <span className="text-[8px] bg-sky-200 px-1 rounded font-mono group-hover:bg-sky-300">test2</span>
                 </div>
-                <span className="text-sky-700 block truncate font-medium">Stock Manager</span>
+                <span className="text-sky-700 block truncate font-medium mt-0.5">Stock Manager</span>
+                <span className="text-[9px] text-sky-500 font-mono">inventory / manager123</span>
               </button>
 
               {/* Level 3: Sales Staff */}
               <button
                 type="button"
-                onClick={() => handleQuickLogin('sales', 'sales123')}
-                className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-left transition btn-tactile"
+                onClick={() => handleQuickLogin('test3', 'test123')}
+                className="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-left transition btn-tactile group"
               >
                 <div className="font-bold text-emerald-900 flex items-center justify-between">
                   <span>💼 Level 3</span>
-                  <span className="text-[8px] bg-emerald-200 px-1 rounded font-mono">sales</span>
+                  <span className="text-[8px] bg-emerald-200 px-1 rounded font-mono group-hover:bg-emerald-300">test3</span>
                 </div>
-                <span className="text-emerald-700 block truncate font-medium">Sales Staff</span>
+                <span className="text-emerald-700 block truncate font-medium mt-0.5">Sales Staff</span>
+                <span className="text-[9px] text-emerald-500 font-mono">sales / sales123</span>
               </button>
 
               {/* Level 4: Auditor */}
               <button
                 type="button"
-                onClick={() => handleQuickLogin('auditor', 'audit123')}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-left transition btn-tactile"
+                onClick={() => handleQuickLogin('test4', 'test123')}
+                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-left transition btn-tactile group"
               >
                 <div className="font-bold text-slate-800 flex items-center justify-between">
                   <span>👁️ Level 4</span>
-                  <span className="text-[8px] bg-slate-300 px-1 rounded font-mono">auditor</span>
+                  <span className="text-[8px] bg-slate-300 px-1 rounded font-mono group-hover:bg-slate-400">test4</span>
                 </div>
-                <span className="text-slate-600 block truncate font-medium">Auditor (Read-Only)</span>
+                <span className="text-slate-600 block truncate font-medium mt-0.5">Auditor (Read-Only)</span>
+                <span className="text-[9px] text-slate-500 font-mono">auditor / audit123</span>
               </button>
             </div>
           </div>
